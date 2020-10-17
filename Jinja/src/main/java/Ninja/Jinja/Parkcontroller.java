@@ -1,5 +1,7 @@
 package Ninja.Jinja;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,8 +21,22 @@ public class Parkcontroller {
 		row3 r3;
 		row4 r4;
 		
+		insert0 in0=new insert0(c);
+		insert1 in1=new insert1(c);
+		insert2 in2=new insert2(c);
+		insert3 in3=new insert3(c);
+		insert4 in4=new insert4(c);
+		
+	
+		
+		
 	@RequestMapping("/")
 	public String hello() {
+		in0.start();
+		in1.start();
+		in2.start();
+		in3.start();
+		in4.start();
 		return "Hello";
 	}
 
@@ -65,7 +81,25 @@ public class Parkcontroller {
 	
 	@RequestMapping("/parkCars")
 	public String park(@RequestParam int num) {
-	return c.inp(num);
+
+	if(c.inp(num)==0)
+	return "Car Park Full";
+
+	in0.run();
+	in1.run();
+	in2.run();
+	in3.run();
+	in4.run();
+
+	try {
+	in0.join();
+	in1.join();
+	in2.join();
+	in3.join();
+	in4.join();}catch(Exception e) {e.printStackTrace();}
+
+	
+	return "Ok";
 	}
 	
 	
@@ -85,22 +119,38 @@ class Carpark{
 	int cars[][]=new int [5][10];
 	int temp[][]=new int [5][10];
 	int counter[] = new int[5];
+	int yet_add[]=new int[5];
 	
-	synchronized String inp(int n) {
+	
+	Queue<Integer> buffer0=new LinkedList<>();
+	Queue<Integer> buffer1=new LinkedList<>();
+	Queue<Integer> buffer2=new LinkedList<>();
+	Queue<Integer> buffer3=new LinkedList<>();
+	Queue<Integer> buffer4=new LinkedList<>();
+	
+	
+	
+	
+	synchronized int inp(int n) {
+		
 		for(int i=1;i<=n;i++)
 		{
-			if(counter[i%5]<10)
-			{cars[i%5][counter[i%5]]=i;
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			counter[i%5]++;}
+			if(i%5==0 && (counter[i%5]+yet_add[i%5])<10)
+				{buffer0.add(i);
+				yet_add[i%5]++;
+				}
+			else if(i%5==1 && (counter[i%5]+yet_add[i%5])<10)
+				{buffer1.add(i);yet_add[i%5]++;				}
+			else if(i%5==2 && (counter[i%5]+yet_add[i%5])<10)
+				{buffer2.add(i);yet_add[i%5]++;}
+			else if(i%5==3 &&(counter[i%5]+yet_add[i%5])<10)
+				{buffer3.add(i);yet_add[i%5]++;}
+			else if (i%5==4 && (counter[i%5]+yet_add[i%5])<10)
+				{buffer4.add(i);yet_add[i%5]++;}
 			else
-			return "Car Park Full";	
+				return 0;
 		}
-		return "OK";
+		return 1;
 	}
 	
 	synchronized String row0(int a) {
@@ -243,6 +293,112 @@ class Carpark{
 	}
 	
 }
+
+
+ class insert0 extends Thread{
+	Carpark c;
+	insert0(Carpark c){
+		this.c=c;
+	}
+	synchronized public void run() {
+		try {
+			Thread.sleep(5000);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		while(!c.buffer0.isEmpty()) {
+		c.cars[0][c.counter[0]++]=c.buffer0.peek();
+		c.buffer0.remove();
+		c.yet_add[0]--;}
+	}
+}
+
+
+
+class insert1 extends Thread{
+	Carpark c;
+	insert1(Carpark c){
+		this.c=c;
+	}
+	synchronized public void run() {
+		try {
+			Thread.sleep(5000);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		while(!c.buffer1.isEmpty()) {
+		c.cars[1][c.counter[1]++]=c.buffer1.peek();
+		c.buffer1.remove();
+		c.yet_add[1]--;}
+	}
+}
+
+
+class insert2 extends Thread{
+	Carpark c;
+	insert2(Carpark c){
+		this.c=c;
+	}
+	synchronized public void run() {
+		try {
+			Thread.sleep(5000);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		while(!c.buffer2.isEmpty()) {
+		c.cars[2][c.counter[2]++]=c.buffer2.peek();
+		c.buffer2.remove();
+		c.yet_add[2]--;}
+	}
+}
+
+
+class insert3 extends Thread{
+	Carpark c;
+	insert3(Carpark c){
+		this.c=c;
+	}
+	synchronized public void run() {
+		try {
+			Thread.sleep(5000);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		while(!c.buffer3.isEmpty()) {
+		c.cars[3][c.counter[3]++]=c.buffer3.peek();
+		c.buffer3.remove();
+		c.yet_add[3]--;}
+	}
+}
+
+
+class insert4 extends Thread{
+	Carpark c;
+	insert4(Carpark c){
+		this.c=c;
+	}
+	synchronized public void run() {
+		try {
+			Thread.sleep(5000);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		while(!c.buffer4.isEmpty()) {
+		c.cars[4][c.counter[4]++]=c.buffer4.peek();
+		c.buffer4.remove();
+		c.yet_add[4]--;}
+	}
+}
+
+/*******************************************/
+/*******************************************/
+/*******************************************/
+/*******************************************/
+/*******************************************//*******************************************/
+/*******************************************//*******************************************/
+
+
+
 
 class row0 implements Callable<String>{
 	Carpark c;
